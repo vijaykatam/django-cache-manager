@@ -15,12 +15,11 @@ class SharedMemory(BaseSharing):
 
     # could use a different cache namespace
     def broadcast_model_cache_info(self, model_cache_info, **kwargs):
-        logger.info(u'Update model cache {0}'.format(model_cache_info))
+        logger.info(u'Updating model cache {0}'.format(model_cache_info))
         self.cache_backend.set(model_cache_info.table_name, model_cache_info)
 
     def retrieve_model_cache_info(self, key, **kwargs):
         model_cache_info = self.cache_backend.get(key)
-        logger.debug(u'Retrieved model cache for key {0} is {1}'.format(key, model_cache_info))
         return model_cache_info
 
     @property

@@ -30,7 +30,7 @@ dev-requirements:
 	pip install -r requirements-dev.txt	
 
 test: dev-requirements
-	DJANGO_SETTINGS_MODULE=tests.settings python setup.py nosetests --with-django-nose $(TESTARGS)
+	python tests/manage.py test
 
 test-all:
 	tox
