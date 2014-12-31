@@ -16,12 +16,13 @@ test_requirements = [
     'fake-factory>=0.4.0,<1',
     'nosexcover>=1.0.8, <2',
     'ipdb',
+    'mock',
 ]
 
 setup(
     name='django-cache-manager',
     version='0.1.0-beta.1',
-    description='',
+    description='Cache manager for django models',
     long_description=readme + '\n\n' + history,
     author='Vijay Katam',
     url='https://github.com/vijaykatam/django-cache-manager',
