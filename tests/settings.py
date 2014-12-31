@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
-
+import os.path
+here = lambda *x: os.path.join(os.path.abspath(os.path.dirname(__file__)), *x)
 SECRET_KEY = 's3cr3t'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
+        # 'NAME': ':memory:',
+        'NAME': here('test.db')
     },
 }
 
 INSTALLED_APPS = (
-    'cache_manager',
+    'django_cache_manager',
     'tests',
+    'django_nose',
 )
 
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 CACHES = {
     'default': {
@@ -45,7 +49,7 @@ LOGGING = {
             'datefmt': "%d/%b/%Y %H:%M:%S",
         },
         'simple': {
-            'format': ' [%(levelname)s] %(name)s: process_id="%(process)s";thread_id="%(thread)s";%(message)s',
+            'format': ' [%(levelname)s] %(name)s: process_id="%(process)s";thread_id="%(thread)s": %(message)s',
         },
     },
     'handlers': {
