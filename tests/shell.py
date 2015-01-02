@@ -6,10 +6,10 @@ from django.core.management import (
 )
 
 try:
-    import settings  # Assumed to be in the same directory.
+    import settings
 except ImportError:
     import sys
-    sys.stderr.write("Error: Can't find the file 'settings.py' in the directory containing %r.\n If the file settings.py does indeed exist, it's causing an ImportError somehow.\n" % __file__)
+    sys.stderr.write("Error importing settings")
     sys.exit(1)
 
 if __name__ == "__main__":
