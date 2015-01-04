@@ -23,7 +23,7 @@ class CacheKeyMixin(object):
             db_table = self.model._meta.db_table
             logger.debug('created new key {0} for model {1}'.format(key, db_table))
             model_cache_info = ModelCacheInfo(db_table, key)
-            model_cache_backend.broadcast_model_cache_info(model_cache_info)
+            model_cache_backend.share_model_cache_info(model_cache_info)
         query_key = u'{model_key}{qs}{db}'.format(model_key=key,
                                                   qs=sql,
                                                   db=self.db)
@@ -48,7 +48,7 @@ class CacheInvalidateMixin(object):
         "Invalidate cache for the model by generating a new key"
         logger.info('Invalidating cache for table {0}'.format(self.model._meta.db_table))
         model_cache_info = ModelCacheInfo(self.model._meta.db_table, uuid.uuid4().hex)
-        model_cache_backend.broadcast_model_cache_info(model_cache_info)
+        model_cache_backend.share_model_cache_info(model_cache_info)
 
 
 class CacheBackendMixin(object):

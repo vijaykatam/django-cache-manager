@@ -21,7 +21,7 @@ test_requirements = [
 
 setup(
     name='django-cache-manager',
-    version='0.1.0-beta.1',
+    version='0.1.0',
     description='Cache manager for django models',
     long_description=readme + '\n\n' + history,
     author='Vijay Katam',
@@ -34,7 +34,7 @@ setup(
     zip_safe=False,
     keywords='django-cache-manager',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",

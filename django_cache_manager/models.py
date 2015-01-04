@@ -20,7 +20,7 @@ def invalidate_model_cache(sender, instance, **kwargs):
     "Signal receiver for models"
     logger.debug('Received post_save/post_delete signal from sender {0}'.format(sender))
     model_cache_info = ModelCacheInfo(sender._meta.db_table, uuid.uuid4().hex)
-    model_cache_backend.broadcast_model_cache_info(model_cache_info)
+    model_cache_backend.share_model_cache_info(model_cache_info)
 
 post_save.connect(invalidate_model_cache)
 post_delete.connect(invalidate_model_cache)

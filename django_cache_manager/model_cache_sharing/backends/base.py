@@ -9,7 +9,7 @@ class BaseSharing(object):
     __metaclass__ = abc.ABCMeta
 
     @abstractmethod
-    def broadcast_model_cache_info(self, model_cache_info, **kwargs):
+    def share_model_cache_info(self, model_cache_info, **kwargs):
         "Share model cache info with all processes"
 
     @abstractmethod

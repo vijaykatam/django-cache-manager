@@ -10,7 +10,7 @@ class InterProcessCommunication(BaseSharing):
     3. 
     """
 
-    def broadcast_model_cache_info(self, model_cache_info, **kwargs):
+    def share_model_cache_info(self, model_cache_info, **kwargs):
         raise NotImplementedError()
 
     def retrieve_model_cache_info(self, key, **kwargs):

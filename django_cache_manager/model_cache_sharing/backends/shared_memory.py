@@ -14,7 +14,7 @@ class SharedMemory(BaseSharing):
     "Processes implicitly communicate by using a shared memory "
 
     # could use a different cache namespace
-    def broadcast_model_cache_info(self, model_cache_info, **kwargs):
+    def share_model_cache_info(self, model_cache_info, **kwargs):
         logger.info(u'Updating model cache {0}'.format(model_cache_info))
         self.cache_backend.set(model_cache_info.table_name, model_cache_info)
 

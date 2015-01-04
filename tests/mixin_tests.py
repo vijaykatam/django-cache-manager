@@ -36,7 +36,7 @@ class CacheKeyMixinTests(TestCase):
         mock_uuid.uuid4.return_value = mock_uuid4
         self.mixin.generate_key()
         model_cache_info = ModelCacheInfo(table_name=u'tests_manufacturer', table_key='unique_id')
-        mock_model_cache.broadcast_model_cache_info.assert_called_once_with(model_cache_info)
+        mock_model_cache.share_model_cache_info.assert_called_once_with(model_cache_info)
 
     def test_key_components(self, mock_sql, mock_model_cache):
         "Ensure key created by mixin is a hash of model_key, sql query and database name"
@@ -76,4 +76,4 @@ class CacheInvalidateMixinTests(TestCase):
         mock_uuid4 = Mock(hex='unique_id')
         mock_uuid.uuid4.return_value = mock_uuid4
         self.mixin.invalidate_model_cache()
-        mock_model_cache.broadcast_model_cache_info.assert_called_once_with(ModelCacheInfo(table_name=u'tests_manufacturer', table_key='unique_id'))
+        mock_model_cache.share_model_cache_info.assert_called_once_with(ModelCacheInfo(table_name=u'tests_manufacturer', table_key='unique_id'))
