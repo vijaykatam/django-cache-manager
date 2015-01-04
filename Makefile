@@ -30,6 +30,7 @@ dev-requirements:
 	pip install -r requirements-dev.txt	
 
 test: dev-requirements
+	pip install -e .
 	python tests/manage.py test
 
 test-all:
