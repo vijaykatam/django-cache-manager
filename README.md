@@ -2,7 +2,8 @@
 django-cache-manager
 ===============================
 
-Cache manager for django models
+Simple cache manager for django models that caches querysets for a model. On an update or delete the model cache is 
+evicted.
 
 
 [![Build Status])
