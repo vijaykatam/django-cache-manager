@@ -56,19 +56,6 @@ To run all tests
 make test
 ```
 
-To run tests in a specific module
-```sh
-make test TESTARGS='--tests=tests.some_module_tests'
-```
-To run tests in a specific test package
-```sh
-make test TESTARGS='--tests=tests/some_package_tests'
-```
-To generate a coverage report and run tests for jenkins
-```
-make coverage
-```
-
 
 
 
