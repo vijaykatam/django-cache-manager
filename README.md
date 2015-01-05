@@ -28,6 +28,7 @@ class MyModel(models.Model):
    objects = CacheManager()
 
    # or declare a new manager
+   objects = models.Manager()
    cached_objects = CacheManager()
 ```   
 

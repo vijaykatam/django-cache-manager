@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import os.path
+import random
+import sys
+
 here = lambda *x: os.path.join(os.path.abspath(os.path.dirname(__file__)), *x)
 SECRET_KEY = 's3cr3t'
 DATABASES = {
@@ -18,13 +21,21 @@ INSTALLED_APPS = (
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
+# static cache location for django shell
+cache_location = '/tmp/django_cache_manager'
+# random cache location for each test run
+if 'test' in sys.argv:
+    cache_location = '/tmp/django_cache_manager_{0}'.format(random.randint(1, 1000))
+
+print cache_location
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     },
     'django_cache_manager.cache_backend': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': '/tmp/django_cache_manager',
+        'LOCATION': cache_location,
         'TIMEOUT': 1800
     }
 }
@@ -68,6 +79,11 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
             'level': 'DEBUG',
+        },
+        'factory': {
+            'handlers': ['console'],
+            'propagate': False,
+            'level': 'ERROR',
         },
     },
 
