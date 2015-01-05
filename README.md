@@ -15,10 +15,32 @@ evicted.
 pip install django-cache-manager
 ```
 
-## Design
+### Caching strategy
+* Cache results for a model on load.
+* Evict cache for model on update.
 
 
 ## Usage
+
+Add to installed apps
+```
+INSTALLED_APPS = (
+    ...
+    'django_cache_manager',
+    ...
+)
+```
+Define cache namespace in `settings.py`, for example
+
+```
+CACHES = {
+    'django_cache_manager.cache_backend': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/tmp/django_cache_manager',
+        'TIMEOUT': 0
+    }
+}
+```
 
 ```
 from django_cache_manager.cache_manager import CacheManager
@@ -32,30 +54,34 @@ class MyModel(models.Model):
    cached_objects = CacheManager()
 ```   
 
-## Development
 
-Use [make](https://www.gnu.org/software/make/) commands to execute development tasks.
-
-* Testing
-* Linting
-* Creating tgzs and wheels
-* ... and more!
-
-To see the full list of commands:
-
-```bash
-make
+## Django shell
+To run django shell with sample models defined in tests.
+```sh
+make shell
 ```
-
+Sample models
+```
+from tests.models import Manufacturer
+from tests.models import Car
+from tests.models import Driver
+m = Manufacturer(name='Tesla')
+m.save()
+c = Car(make=m, model='Model S', year=2015)
+c.save()
+d = Driver(first_name ='ABC', last_name='XYZ')
+d.save()
+d.cars.add(c)
+drivers = Driver.objects.select_related('car', 'manufacturer').all()
+```
 
 ## Testing 
 
-To run all tests
+To run tests
 
 ```sh
 make test
 ```
-
 
 
 

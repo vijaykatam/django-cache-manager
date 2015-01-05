@@ -27,8 +27,6 @@ cache_location = '/tmp/django_cache_manager'
 if 'test' in sys.argv:
     cache_location = '/tmp/django_cache_manager_{0}'.format(random.randint(1, 1000))
 
-print cache_location
-
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
