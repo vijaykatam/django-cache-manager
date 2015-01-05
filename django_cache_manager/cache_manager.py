@@ -20,8 +20,11 @@ class CacheManager(models.Manager, CacheInvalidateMixin):
     # so post_save, post_delete signals are used for cache invalidation. Signals can be removed when this bug is fixed.
     use_for_related_fields = True
 
-    # changed in django 1.6 to get_queryset
+    # django <=1.5
     def get_query_set(self):
+        return CachingQuerySet(self.model, using=self._db)
+
+    def get_queryset(self):
         return CachingQuerySet(self.model, using=self._db)
 
 
