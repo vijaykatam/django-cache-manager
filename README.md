@@ -5,8 +5,8 @@ django-cache-manager
 Simple cache manager for django models that caches querysets for a model. On an update or delete the model cache is 
 evicted.
 
-
 [![Build Status](https://travis-ci.org/vijaykatam/django-cache-manager.svg?branch=master)](https://travis-ci.org/vijaykatam/django-cache-manager)
+[![Coverage Status](https://img.shields.io/coveralls/vijaykatam/django-cache-manager.svg)](https://coveralls.io/r/vijaykatam/django-cache-manager)
 
 ## Installation
 
@@ -82,6 +82,10 @@ To run tests
 ```sh
 make test
 ```
+
+##### Supported Django versions 
+Supported - 1.5, 1.6, 1.7
+
 
 
 

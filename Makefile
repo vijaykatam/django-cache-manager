@@ -35,8 +35,8 @@ shell: dev-requirements
 	pip install -e .
 	python tests/shell.py
 
-# coverage: dev-requirements
-# 	DJANGO_SETTINGS_MODULE=tests.settings python setup.py nosetests --with-django-nose --with-xcoverage --cover-package=django_cache_manager --cover-inclusive --cover-erase
+coverage: dev-requirements
+	coverage run --source=django_cache_manager tests/manage.py test
 
 dist: clean
 	python setup.py sdist
