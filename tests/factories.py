@@ -3,10 +3,11 @@
 import factory
 from factory import fuzzy
 
-from .models import(
+from tests.models import(
     Manufacturer,
     Car,
-    Driver
+    Driver,
+    Engine
 )
 
 
@@ -24,6 +25,7 @@ class CarFactory(factory.django.DjangoModelFactory):
     make = factory.SubFactory(ManufacturerFactory)
     model = fuzzy.FuzzyText()
     year = fuzzy.FuzzyInteger(1980, 2015)
+    engine = factory.SubFactory('tests.factories.EngineFactory')
 
 
 class DriverFactory(factory.django.DjangoModelFactory):
@@ -32,4 +34,21 @@ class DriverFactory(factory.django.DjangoModelFactory):
 
     first_name = fuzzy.FuzzyText()
     last_name = fuzzy.FuzzyText()
-    cars = factory.SubFactory(CarFactory)
+
+    @factory.post_generation
+    def cars(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for car in extracted:
+                self.cars.add(car)
+
+
+class EngineFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Engine
+
+    name = fuzzy.FuzzyText()
+    horse_power = fuzzy.FuzzyInteger(50, 3000)
+    torque = fuzzy.FuzzyText()

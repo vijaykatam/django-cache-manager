@@ -8,7 +8,6 @@ SECRET_KEY = 's3cr3t'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': ':memory:',
         'NAME': here('test.db')
     },
 }

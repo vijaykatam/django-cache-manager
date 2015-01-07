@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class CacheManager(models.Manager, CacheInvalidateMixin):
+    """
+    Custom model manager that returns CachingQuerySet
+    """
 
     # Use this manager when accessing objects that are related to from some other model.
     # Works only for one-to-one relationships not for many-to-many or foreign keys. See https://code.djangoproject.com/ticket/14891
@@ -29,6 +32,12 @@ class CacheManager(models.Manager, CacheInvalidateMixin):
 
 
 class CachingQuerySet(QuerySet, CacheBackendMixin, CacheKeyMixin, CacheInvalidateMixin):
+    """
+    Custom query set that caches results on load. This query set will force iteration of the result set
+    so that the results can be cached for future calls.
+
+    Query set invalidates model cache for any calls to bulk_create or update.
+    """
 
     def iterator(self):
         key = self.generate_key()

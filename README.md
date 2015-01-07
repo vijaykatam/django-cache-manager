@@ -11,7 +11,6 @@ evicted.
 ## Installation
 
 ```sh
-
 pip install django-cache-manager
 ```
 
@@ -30,7 +29,8 @@ INSTALLED_APPS = (
     ...
 )
 ```
-Define cache namespace in `settings.py`, for example
+Define cache backend for `django_cache_manager.cache_backend` in `settings.py`. The backend can be any cache backend 
+that implements django cache API.
 
 ```
 CACHES = {

@@ -13,7 +13,9 @@ class SignalTests(TestCase):
 
     @patch('django_cache_manager.models.uuid')
     def test_invalidate_model_cache(self, mock_uuid, mock_model_cache):
-        "Signal hooks broadcasts new model cache info when called"
+        """
+        Signal hooks broadcasts new model cache info when called
+        """
         mock_uuid4 = Mock(hex='unique_id')
         mock_uuid.uuid4.return_value = mock_uuid4
         invalidate_model_cache(Manufacturer, None)

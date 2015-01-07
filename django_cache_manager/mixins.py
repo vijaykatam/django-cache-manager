@@ -16,7 +16,10 @@ logger = logging.getLogger(__name__)
 class CacheKeyMixin(object):
 
     def generate_key(self):
-        "Generate cache key for the current query. If a new key is created for the model it is then broadcast for other consumers."
+        """
+        Generate cache key for the current query. If a new key is created for the model it is
+        then shared with other consumers.
+        """
         sql = self.sql()
         key, created = self.get_or_create_model_key()
         if created:
@@ -31,11 +34,22 @@ class CacheKeyMixin(object):
         return key
 
     def sql(self):
+        """
+        Get sql for the current query.
+        """
         clone = self.query.clone()
         sql, params = clone.get_compiler(using=self.db).as_sql()
         return sql % params
 
     def get_or_create_model_key(self):
+        """
+        Get or create key for the model.
+
+        Returns
+        ~~~~~~~
+        (model_key, boolean) tuple
+
+        """
         model_cache_info = model_cache_backend.retrieve_model_cache_info(self.model._meta.db_table)
         if not model_cache_info:
             return uuid.uuid4().hex, True
@@ -45,7 +59,9 @@ class CacheKeyMixin(object):
 class CacheInvalidateMixin(object):
 
     def invalidate_model_cache(self):
-        "Invalidate cache for the model by generating a new key"
+        """
+        Invalidate model cache by generating new key for the model.
+        """
         logger.info('Invalidating cache for table {0}'.format(self.model._meta.db_table))
         model_cache_info = ModelCacheInfo(self.model._meta.db_table, uuid.uuid4().hex)
         model_cache_backend.share_model_cache_info(model_cache_info)
@@ -56,6 +72,14 @@ class CacheBackendMixin(object):
     # TODO - django 1.7 has thread safe module level cache interface
     @property
     def cache_backend(self):
+        """
+        Get the cache backend
+
+        Returns
+        ~~~~~~~
+        Django cache backend
+
+        """
         if not hasattr(self, '_cache_backend'):
             self._cache_backend = get_cache(_cache_name)
         return self._cache_backend
