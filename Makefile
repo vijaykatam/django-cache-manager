@@ -36,6 +36,7 @@ shell: dev-requirements
 	python tests/shell.py
 
 coverage: dev-requirements
+	pip install -e .
 	coverage run --source=django_cache_manager tests/manage.py test
 
 dist: clean
