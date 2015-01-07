@@ -11,5 +11,5 @@ install:
   - python setup.py -q install
   - pip install -r requirements-dev.txt
 # command to run tests
-script: make test
+script: make coverage
 after_success: coveralls
