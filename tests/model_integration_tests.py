@@ -7,6 +7,7 @@ Use models defined in tests t
 1. Black box tests - input model data,  retrieve, delete, update -assert that right data is retrieved
 """
 from django.forms.models import model_to_dict
+from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase
 
 from tests.models import(
@@ -44,3 +45,14 @@ class ModelIntegrationTests(TestCase):
         m.name = 'Toyota'
         m.save()
         self.assertEquals(model_to_dict(m), model_to_dict(Manufacturer.cached_objects.get(id=m.id)))
+
+    def test_delete_manufacturer(self):
+        m = self.manufacturers[0]
+        self.assertEquals(model_to_dict(m), model_to_dict(Manufacturer.cached_objects.get(id=m.id)))
+        m.delete()
+        with self.assertRaises(ObjectDoesNotExist):
+            Manufacturer.cached_objects.get(id=m.id)
+
+    """
+    Add tests for bulk create and update
+    """
