@@ -3,6 +3,8 @@ import os.path
 import random
 import sys
 
+import django
+
 here = lambda *x: os.path.join(os.path.abspath(os.path.dirname(__file__)), *x)
 SECRET_KEY = 's3cr3t'
 DATABASES = {
@@ -86,3 +88,6 @@ LOGGING = {
 
 
 }
+
+if django.get_version() > '1.7':
+    MIDDLEWARE_CLASSES = ()

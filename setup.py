@@ -7,7 +7,7 @@ readme = open('README.md').read()
 history = open('HISTORY.md').read().replace('.. :changelog:', '')
 
 requirements = [
-    'Django<1.6',
+    'Django<=1.8',
 ]
 
 test_requirements = [
@@ -21,7 +21,7 @@ test_requirements = [
 
 setup(
     name='django-cache-manager',
-    version='0.1.0',
+    version='0.1.0-beta.1',
     description='Cache manager for django models',
     long_description=readme + '\n\n' + history,
     author='Vijay Katam',
