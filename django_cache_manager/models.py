@@ -2,7 +2,7 @@
 import logging
 import uuid
 
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, m2m_changed
 
 from .model_cache_sharing.types import ModelCacheInfo
 from .model_cache_sharing import model_cache_backend
@@ -28,9 +28,11 @@ def invalidate_model_cache(sender, instance, **kwargs):
     instance
         The actual instance being saved.
     """
+    import ipdb; ipdb.set_trace()
     logger.debug('Received post_save/post_delete signal from sender {0}'.format(sender))
     model_cache_info = ModelCacheInfo(sender._meta.db_table, uuid.uuid4().hex)
     model_cache_backend.share_model_cache_info(model_cache_info)
 
 post_save.connect(invalidate_model_cache)
 post_delete.connect(invalidate_model_cache)
+m2m_changed.connect(invalidate_model_cache)
