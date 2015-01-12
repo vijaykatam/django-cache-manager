@@ -22,7 +22,6 @@ class Car(models.Model):
     engine = models.OneToOneField('Engine')
 
     objects = CacheManager()
-    # cached_objects = CacheManager()
 
 
 class Driver(models.Model):
@@ -31,7 +30,6 @@ class Driver(models.Model):
     cars = models.ManyToManyField('Car')
 
     objects = CacheManager()
-    # cached_objects = CacheManager()
 
 
 class Engine(models.Model):
@@ -40,4 +38,3 @@ class Engine(models.Model):
     torque = models.CharField(max_length=128)
 
     objects = CacheManager()
-    # cached_objects = CacheManager()

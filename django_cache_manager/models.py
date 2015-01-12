@@ -16,6 +16,14 @@ For compatibility with Django 1.5 these receivers live in models.py
 logger = logging.getLogger(__name__)
 
 
+def _update_model_cache(table_name):
+    """
+    Updates model cache by generating a new key for the model
+    """
+    model_cache_info = ModelCacheInfo(table_name, uuid.uuid4().hex)
+    model_cache_backend.share_model_cache_info(model_cache_info)
+
+
 def invalidate_model_cache(sender, instance, **kwargs):
     """
     Signal receiver for models to invalidate model cache.
@@ -28,11 +36,27 @@ def invalidate_model_cache(sender, instance, **kwargs):
     instance
         The actual instance being saved.
     """
-    import ipdb; ipdb.set_trace()
     logger.debug('Received post_save/post_delete signal from sender {0}'.format(sender))
-    model_cache_info = ModelCacheInfo(sender._meta.db_table, uuid.uuid4().hex)
-    model_cache_backend.share_model_cache_info(model_cache_info)
+    _update_model_cache(sender._meta.db_table)
+
+def invalidate_m2m_cache(sender, instance, model, **kwargs):
+    """
+    Signal receiver for models to invalidate model cache for many-to-many relationship.
+
+    Parameters
+    ~~~~~~~~~~
+    sender
+        The model class
+    instance
+        The instance whose many-to-many relation is updated.
+    model
+        The class of the objects that are added to, removed from or cleared from the relation.
+    """
+    logger.debug('Received m2m_changed signals from sender {0}'.format(sender))
+    _update_model_cache(instance._meta.db_table)
+    _update_model_cache(model._meta.db_table)
+
 
 post_save.connect(invalidate_model_cache)
 post_delete.connect(invalidate_model_cache)
-m2m_changed.connect(invalidate_model_cache)
+m2m_changed.connect(invalidate_m2m_cache)
