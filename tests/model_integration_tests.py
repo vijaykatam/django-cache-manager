@@ -207,9 +207,9 @@ class ModelCacheTests(TestCase):
     def test_many_to_many_mapping_cache_with_add(self):
         """
         Cache for both models in this many-to-many relationship should
-        be updated when calling adding objects
+        be updated when calling 'add' on related objects
         """
-        new_cars = CarFactory.create_batch(size=1)
+        new_cars = CarFactory.create_batch(size=3)
         Driver.objects.get(id=self.driver.id).cars.all()[0].year
         # Using add() with a many-to-many relationship will call
         # QuerySet.bulk_create() to create the relationships.
@@ -220,6 +220,37 @@ class ModelCacheTests(TestCase):
         # Cache for both models should be invalidated as add is an m2m change
         Driver.objects.get(id=self.driver.id).cars.all()[0].year
         self.assertEqual(len(connection.queries), 2)
+
+    @override_settings(DEBUG=True)
+    def test_many_to_many_mapping_cache_with_remove(self):
+        """
+        Cache for both models in this many-to-many relationship should
+        be updated when calling 'remove' on related objects
+        """
+        new_car = CarFactory.create()
+        self.driver.cars.add(new_car)
+        Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        self.driver.cars.remove(self.car)
+        reset_queries()
+
+        # Cache for both models should be invalidated as remove is an m2m change
+        Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        self.assertEqual(len(connection.queries), 2)
+
+    @override_settings(DEBUG=True)
+    def test_many_to_many_mapping_cache_with_clear(self):
+        """
+        Cache for both models in this many-to-many relationship should
+        be updated when calling 'clear' on related objects
+        """
+        len(Driver.objects.get(id=self.driver.id).cars.all())
+        self.driver.cars.clear()
+        reset_queries()
+
+        # Cache for both models should be invalidated as clear is an m2m change
+        len(Driver.objects.get(id=self.driver.id).cars.all())
+        self.assertEqual(len(connection.queries), 2)
+
 
 
 
