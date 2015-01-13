@@ -83,9 +83,10 @@ class ModelCacheTests(TestCase):
     """
 
     def setUp(self):
-        self.manufacturers = ManufacturerFactory.create_batch(size=5)
+        self.manufacturer = ManufacturerFactory.create()
         self.engine = EngineFactory.create(name='test_engine')
-        self.car = CarFactory.create(engine=self.engine, year=2015)
+        self.car = CarFactory.create(
+            make=self.manufacturer, engine=self.engine, year=2015)
         self.driver = DriverFactory.create(cars=[self.car])
         reset_queries()
 
@@ -251,7 +252,71 @@ class ModelCacheTests(TestCase):
         len(Driver.objects.get(id=self.driver.id).cars.all())
         self.assertEqual(len(connection.queries), 2)
 
+    @override_settings(DEBUG=True)
+    def test_many_to_one_mapping_cache(self):
+        """
+        Queries should be cached when making the same select queries
+        on related objects repeatedly
+        """
+        for i in range(5):
+            len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        # The above query is actually composed of 2 sql queries:
+        # one for fetching the manufacturer and the other cars.
+        self.assertEqual(len(connection.queries), 2)
 
+    @override_settings(DEBUG=True)
+    def test_many_to_one_mapping_cache_with_save(self):
+        """
+        Cache should be invalidated when calling 'save' on related objects
+        """
+        car2 = CarFactory.create(make=self.manufacturer)
+        len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        car2.name = 'gti'
+        car2.save()
+        reset_queries()
 
+        # Only 1 cache (the one for car selection query) will be invalidated
+        # as we only update data on Car table
+        len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        self.assertEqual(len(connection.queries), 1)
 
+    @override_settings(DEBUG=True)
+    def test_many_to_one_mapping_cache_with_delete(self):
+        """
+        Cache should be invalidated when calling 'delete' on related objects
+        """
+        car2 = CarFactory.create(make=self.manufacturer)
+        len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        car2.delete()
+        reset_queries()
 
+        # # Only 1 cache (the one for car selection query) will be invalidated
+        # # as we only delete data on Car table
+        len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        self.assertEqual(len(connection.queries), 1)
+
+    @override_settings(DEBUG=True)
+    def test_cache_invalidate_with_bulk_create(self):
+        """
+        Cache should be invalidated when calling 'bulk_create'
+        """
+        len(Manufacturer.objects.all())
+        Manufacturer.objects.bulk_create(
+            [Manufacturer(name='m1'), Manufacturer(name='m2')]
+        )
+        reset_queries()
+
+        len(Manufacturer.objects.all())
+        self.assertEqual(len(connection.queries), 1)
+
+    @override_settings(DEBUG=True)
+    def test_cache_invalidate_with_update(self):
+        """
+        Cache should be invalidated when calling 'update'
+        """
+        len(Manufacturer.objects.all())
+        Manufacturer.objects.all().update(name='new name')
+        reset_queries()
+
+        len(Manufacturer.objects.all())
+        self.assertEqual(len(connection.queries), 1)

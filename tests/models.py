@@ -12,7 +12,6 @@ class Manufacturer(models.Model):
     name = models.CharField(max_length=128)
 
     objects = CacheManager()
-    # cached_objects = CacheManager()
 
 
 class Car(models.Model):
