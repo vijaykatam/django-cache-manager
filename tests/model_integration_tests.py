@@ -45,31 +45,36 @@ class ModelCRUDTests(TestCase):
 
     def test_create_new_manufacturer(self):
         """
-        Number of manufacturers returned by cached_objects is same as regular objects when a new manufacturer is created.
+        Number of manufacturers returned by objects should increment after
+        creating a new manufacturer
         """
-        self.assertEquals(len(self.manufacturers), len(Manufacturer.cached_objects.all()))
         ManufacturerFactory.create()
-        self.assertEquals(len(Manufacturer.objects.all()), len(Manufacturer.objects.all()))
+        self.assertEqual(
+            len(Manufacturer.objects.all()), len(self.manufacturers) + 1)
 
     def test_update_manufacturer(self):
         """
-        Cache manager returns most recently updated record even if it has been cached and an update happens after.
-        """        
+        Cache manager returns most recently updated record
+        even if it has been cached and an update happens after.
+        """
         m = self.manufacturers[0]
-        self.assertEquals(model_to_dict(m), model_to_dict(Manufacturer.cached_objects.get(id=m.id)))
+        self.assertEqual(
+            model_to_dict(m), model_to_dict(Manufacturer.objects.get(id=m.id)))
         m.name = 'Toyota'
         m.save()
-        self.assertEquals(model_to_dict(m), model_to_dict(Manufacturer.cached_objects.get(id=m.id)))
+        self.assertEqual(
+            model_to_dict(m), model_to_dict(Manufacturer.objects.get(id=m.id)))
 
     def test_delete_manufacturer(self):
         """
         When a cached record is deleted Cache manager raises ObjectDoesNotExist when trying to retrieve
-        """        
+        """
         m = self.manufacturers[0]
-        self.assertEquals(model_to_dict(m), model_to_dict(Manufacturer.cached_objects.get(id=m.id)))
+        self.assertEqual(
+            model_to_dict(m), model_to_dict(Manufacturer.objects.get(id=m.id)))
         m.delete()
         with self.assertRaises(ObjectDoesNotExist):
-            Manufacturer.cached_objects.get(id=m.id)
+            Manufacturer.objects.get(id=m.id)
 
 
 class ModelCacheTests(TestCase):
@@ -78,23 +83,22 @@ class ModelCacheTests(TestCase):
     """
 
     def setUp(self):
-        self.manufacturers = ManufacturerFactory.create_batch(size=5)
+        self.manufacturer = ManufacturerFactory.create()
         reset_queries()
 
     @override_settings(DEBUG=True)
     def test_cache_hit(self):
         """
-        Number of sql queries should be 1 when making the same query repeatedly.
+        The query should be cached when making the same query repeatedly.
         """
         for i in range(5):
-            len(Manufacturer.cached_objects.all())
-        self.assertEquals(1, len(connection.queries))
+            len(Manufacturer.objects.all())
+        self.assertEqual(len(connection.queries), 1)
 
-    
     def test_dummy_cache(self):
         """
-        Number of sql queries is equal to the number of manager accesses when cache backend is dummy.
-        """        
+        There should not be any query caching when cache backend is dummy.
+        """
         CACHES = {
             'default': {
                 'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
@@ -102,13 +106,249 @@ class ModelCacheTests(TestCase):
             'django_cache_manager.cache_backend': {
                 'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
             }
-        }       
+        }
         with override_settings(DEBUG=True, CACHES=CACHES):
             for i in range(5):
-                len(Manufacturer.cached_objects.all())
-            self.assertEquals(5, len(connection.queries))
+                len(Manufacturer.objects.all())
+            self.assertEqual(len(connection.queries), 5)
+
+    @override_settings(DEBUG=True)
+    def test_cache_invalidate_with_bulk_create(self):
+        """
+        Cache should be invalidated when calling 'bulk_create'
+        """
+        initial_count = len(Manufacturer.objects.all())
+        Manufacturer.objects.bulk_create(
+            [Manufacturer(name='m1'), Manufacturer(name='m2')]
+        )
+        reset_queries()
+
+        new_count = len(Manufacturer.objects.all())
+        self.assertEqual(len(connection.queries), 1)
+        self.assertEqual(initial_count + 2, new_count)
+
+    @override_settings(DEBUG=True)
+    def test_cache_invalidate_with_update(self):
+        """
+        Cache should be invalidated when calling 'update'
+        """
+        len(Manufacturer.objects.all())
+        Manufacturer.objects.all().update(name='new name')
+        reset_queries()
+
+        len(Manufacturer.objects.all())
+        self.assertEqual(len(connection.queries), 1)
 
 
+class OneToOneModelCacheTests(TestCase):
+    """
+    Test cache hits and misses on models with one-to-one relationship
+    """
 
-#TODO Add tests for bulk create and update
+    def setUp(self):
+        self.engine = EngineFactory.create(name='test_engine')
+        self.car = CarFactory.create(engine=self.engine, year=2015)
+        reset_queries()
 
+    @override_settings(DEBUG=True)
+    def test_one_to_one_mapping_cache(self):
+        """
+        Queries should be cached when making the same select queries
+        on related objects query repeatedly
+        """
+        for i in range(5):
+            Car.objects.get(id=self.car.id).engine.name
+        # The above query is actually composed of 2 sql queries:
+        # one for fetching cars and the other engines.
+        self.assertEqual(len(connection.queries), 2)
+
+    @override_settings(DEBUG=True)
+    def test_one_to_one_mapping_cache_with_save(self):
+        """
+        Cache should be invalidated when calling 'save' on related objects
+        """
+        Car.objects.get(id=self.car.id).engine.name
+        self.engine.name = 'new_engine'
+        self.engine.save()
+        reset_queries()
+
+        # Only 1 cache (the one for engine selection query) will be invalidated
+        # as we only update data on Engine table
+        Car.objects.get(id=self.car.id).engine.name
+        self.assertEqual(len(connection.queries), 1)
+
+    @override_settings(DEBUG=True)
+    def test_one_to_one_mapping_cache_with_delete(self):
+        """
+        Cache should be invalidated when calling 'delete' related objects
+        """
+        Car.objects.get(id=self.car.id).engine.name
+        self.engine.delete()
+        reset_queries()
+
+        with self.assertRaises(ObjectDoesNotExist):
+            Car.objects.get(id=self.car.id).engine.name
+
+
+class ManyToManyModelCacheTests(TestCase):
+    """
+    Test cache hits and misses on models with many-to-many relationship
+    """
+
+    def setUp(self):
+        self.car = CarFactory.create(year=2015)
+        self.driver = DriverFactory.create(cars=[self.car])
+        reset_queries()
+
+    @override_settings(DEBUG=True)
+    def test_many_to_many_mapping_cache(self):
+        """
+        Queries should be cached when making the same select queries
+        on related objects repeatedly
+        """
+        car2 = CarFactory.create()
+        self.driver.cars.add(car2)
+        reset_queries()
+
+        for i in range(5):
+            Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        # The above query is actually composed of 2 sql queries:
+        # one for fetching drivers and the other cars.
+        self.assertEqual(len(connection.queries), 2)
+
+    @override_settings(DEBUG=True)
+    def test_many_to_many_mapping_cache_with_save(self):
+        """
+        Cache should be invalidated when calling 'save' on related objects
+        """
+        car2 = CarFactory.create()
+        self.driver.cars.add(car2)
+        Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        car2.name = 'gti'
+        car2.save()
+        reset_queries()
+
+        # Only 1 cache (the one for car selection query) will be invalidated
+        # as we only update data on Car table
+        Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        self.assertEqual(len(connection.queries), 1)
+
+    @override_settings(DEBUG=True)
+    def test_many_to_many_mapping_cache_with_delete(self):
+        """
+        Cache should be invalidated when calling 'delete' on related objects
+        """
+        car2 = CarFactory.create()
+        self.driver.cars.add(car2)
+        initial_count = len(Driver.objects.get(id=self.driver.id).cars.all())
+        car2.delete()
+        reset_queries()
+
+        # Only 1 cache (the one for car selection query) will be invalidated
+        # as we only delete data on Car table
+        new_count = len(Driver.objects.get(id=self.driver.id).cars.all())
+        self.assertEqual(len(connection.queries), 1)
+        self.assertEqual(initial_count - 1, new_count)
+
+    @override_settings(DEBUG=True)
+    def test_many_to_many_mapping_cache_with_add(self):
+        """
+        Cache for both models in this many-to-many relationship should
+        be updated when calling 'add' on related objects
+        """
+        new_cars = CarFactory.create_batch(size=3)
+        initial_count = len(Driver.objects.get(id=self.driver.id).cars.all())
+        self.driver.cars.add(*new_cars)
+        reset_queries()
+
+        # Cache for both models should be invalidated as add is an m2m change
+        new_count = len(Driver.objects.get(id=self.driver.id).cars.all())
+        self.assertEqual(len(connection.queries), 2)
+        self.assertEqual(initial_count + 3, new_count)
+
+    @override_settings(DEBUG=True)
+    def test_many_to_many_mapping_cache_with_remove(self):
+        """
+        Cache for both models in this many-to-many relationship should
+        be updated when calling 'remove' on related objects
+        """
+        new_car = CarFactory.create()
+        self.driver.cars.add(new_car)
+        Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        self.driver.cars.remove(self.car)
+        reset_queries()
+
+        # Cache for both models should be invalidated as remove is an m2m change
+        Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        self.assertEqual(len(connection.queries), 2)
+
+    @override_settings(DEBUG=True)
+    def test_many_to_many_mapping_cache_with_clear(self):
+        """
+        Cache for both models in this many-to-many relationship should
+        be updated when calling 'clear' on related objects
+        """
+        len(Driver.objects.get(id=self.driver.id).cars.all())
+        self.driver.cars.clear()
+        reset_queries()
+
+        # Cache for both models should be invalidated as clear is an m2m change
+        len(Driver.objects.get(id=self.driver.id).cars.all())
+        self.assertEqual(len(connection.queries), 2)
+
+
+class ManyToOneModelCacheTests(TestCase):
+    """
+    Test cache hits and misses on models with many-to-one relationship
+    """
+
+    def setUp(self):
+        self.manufacturer = ManufacturerFactory.create()
+        self.car = CarFactory.create(make=self.manufacturer, year=2015)
+        reset_queries()
+
+    @override_settings(DEBUG=True)
+    def test_many_to_one_mapping_cache(self):
+        """
+        Queries should be cached when making the same select queries
+        on related objects repeatedly
+        """
+        for i in range(5):
+            len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        # The above query is actually composed of 2 sql queries:
+        # one for fetching the manufacturer and the other cars.
+        self.assertEqual(len(connection.queries), 2)
+
+    @override_settings(DEBUG=True)
+    def test_many_to_one_mapping_cache_with_save(self):
+        """
+        Cache should be invalidated when calling 'save' on related objects
+        """
+        car2 = CarFactory.create(make=self.manufacturer)
+        len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        car2.name = 'gti'
+        car2.save()
+        reset_queries()
+
+        # Only 1 cache (the one for car selection query) will be invalidated
+        # as we only update data on Car table
+        len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        self.assertEqual(len(connection.queries), 1)
+
+    @override_settings(DEBUG=True)
+    def test_many_to_one_mapping_cache_with_delete(self):
+        """
+        Cache should be invalidated when calling 'delete' on related objects
+        """
+        car2 = CarFactory.create(make=self.manufacturer)
+        initial_count = len(
+            Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        car2.delete()
+        reset_queries()
+
+        # Only 1 cache (the one for car selection query) will be invalidated
+        # as we only delete data on Car table
+        new_count = len(
+            Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        self.assertEqual(len(connection.queries), 1)
+        self.assertEqual(initial_count - 1, new_count)

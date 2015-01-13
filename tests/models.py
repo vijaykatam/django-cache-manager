@@ -11,8 +11,7 @@ from django_cache_manager.cache_manager import CacheManager
 class Manufacturer(models.Model):
     name = models.CharField(max_length=128)
 
-    objects = models.Manager()
-    cached_objects = CacheManager()
+    objects = CacheManager()
 
 
 class Car(models.Model):
@@ -21,8 +20,7 @@ class Car(models.Model):
     year = models.IntegerField()
     engine = models.OneToOneField('Engine')
 
-    objects = models.Manager()
-    cached_objects = CacheManager()
+    objects = CacheManager()
 
 
 class Driver(models.Model):
@@ -30,8 +28,7 @@ class Driver(models.Model):
     last_name = models.CharField(max_length=128)
     cars = models.ManyToManyField('Car')
 
-    objects = models.Manager()
-    cached_objects = CacheManager()
+    objects = CacheManager()
 
 
 class Engine(models.Model):
@@ -39,5 +36,4 @@ class Engine(models.Model):
     horse_power = models.IntegerField()
     torque = models.CharField(max_length=128)
 
-    objects = models.Manager()
-    cached_objects = CacheManager()
+    objects = CacheManager()

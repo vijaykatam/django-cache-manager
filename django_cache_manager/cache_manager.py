@@ -13,7 +13,7 @@ from .mixins import (
 logger = logging.getLogger(__name__)
 
 
-class CacheManager(models.Manager, CacheInvalidateMixin):
+class CacheManager(CacheInvalidateMixin, models.Manager):
     """
     Custom model manager that returns CachingQuerySet
     """
@@ -31,7 +31,7 @@ class CacheManager(models.Manager, CacheInvalidateMixin):
         return CachingQuerySet(self.model, using=self._db)
 
 
-class CachingQuerySet(QuerySet, CacheBackendMixin, CacheKeyMixin, CacheInvalidateMixin):
+class CachingQuerySet(CacheBackendMixin, CacheKeyMixin, CacheInvalidateMixin, QuerySet):
     """
     Custom query set that caches results on load. This query set will force iteration of the result set
     so that the results can be cached for future calls.
