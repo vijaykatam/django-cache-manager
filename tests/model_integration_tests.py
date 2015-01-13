@@ -346,8 +346,8 @@ class ManyToOneModelCacheTests(TestCase):
         car2.delete()
         reset_queries()
 
-        # # Only 1 cache (the one for car selection query) will be invalidated
-        # # as we only delete data on Car table
+        # Only 1 cache (the one for car selection query) will be invalidated
+        # as we only delete data on Car table
         new_count = len(
             Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
         self.assertEqual(len(connection.queries), 1)
