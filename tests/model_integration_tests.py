@@ -84,10 +84,6 @@ class ModelCacheTests(TestCase):
 
     def setUp(self):
         self.manufacturer = ManufacturerFactory.create()
-        self.engine = EngineFactory.create(name='test_engine')
-        self.car = CarFactory.create(
-            make=self.manufacturer, engine=self.engine, year=2015)
-        self.driver = DriverFactory.create(cars=[self.car])
         reset_queries()
 
     @override_settings(DEBUG=True)
@@ -115,6 +111,43 @@ class ModelCacheTests(TestCase):
             for i in range(5):
                 len(Manufacturer.objects.all())
             self.assertEqual(len(connection.queries), 5)
+
+    @override_settings(DEBUG=True)
+    def test_cache_invalidate_with_bulk_create(self):
+        """
+        Cache should be invalidated when calling 'bulk_create'
+        """
+        len(Manufacturer.objects.all())
+        Manufacturer.objects.bulk_create(
+            [Manufacturer(name='m1'), Manufacturer(name='m2')]
+        )
+        reset_queries()
+
+        len(Manufacturer.objects.all())
+        self.assertEqual(len(connection.queries), 1)
+
+    @override_settings(DEBUG=True)
+    def test_cache_invalidate_with_update(self):
+        """
+        Cache should be invalidated when calling 'update'
+        """
+        len(Manufacturer.objects.all())
+        Manufacturer.objects.all().update(name='new name')
+        reset_queries()
+
+        len(Manufacturer.objects.all())
+        self.assertEqual(len(connection.queries), 1)
+
+
+class OneToOneModelCacheTests(TestCase):
+    """
+    Test cache hits and misses on models with one-to-one relationship
+    """
+
+    def setUp(self):
+        self.engine = EngineFactory.create(name='test_engine')
+        self.car = CarFactory.create(engine=self.engine, year=2015)
+        reset_queries()
 
     @override_settings(DEBUG=True)
     def test_one_to_one_mapping_cache(self):
@@ -154,6 +187,17 @@ class ModelCacheTests(TestCase):
 
         with self.assertRaises(ObjectDoesNotExist):
             Car.objects.get(id=self.car.id).engine.name
+
+
+class ManyToManyModelCacheTests(TestCase):
+    """
+    Test cache hits and misses on models with many-to-many relationship
+    """
+
+    def setUp(self):
+        self.car = CarFactory.create(year=2015)
+        self.driver = DriverFactory.create(cars=[self.car])
+        reset_queries()
 
     @override_settings(DEBUG=True)
     def test_many_to_many_mapping_cache(self):
@@ -252,6 +296,17 @@ class ModelCacheTests(TestCase):
         len(Driver.objects.get(id=self.driver.id).cars.all())
         self.assertEqual(len(connection.queries), 2)
 
+
+class ManyToOneModelCacheTests(TestCase):
+    """
+    Test cache hits and misses on models with many-to-one relationship
+    """
+
+    def setUp(self):
+        self.manufacturer = ManufacturerFactory.create()
+        self.car = CarFactory.create(make=self.manufacturer, year=2015)
+        reset_queries()
+
     @override_settings(DEBUG=True)
     def test_many_to_one_mapping_cache(self):
         """
@@ -293,30 +348,4 @@ class ModelCacheTests(TestCase):
         # # Only 1 cache (the one for car selection query) will be invalidated
         # # as we only delete data on Car table
         len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
-        self.assertEqual(len(connection.queries), 1)
-
-    @override_settings(DEBUG=True)
-    def test_cache_invalidate_with_bulk_create(self):
-        """
-        Cache should be invalidated when calling 'bulk_create'
-        """
-        len(Manufacturer.objects.all())
-        Manufacturer.objects.bulk_create(
-            [Manufacturer(name='m1'), Manufacturer(name='m2')]
-        )
-        reset_queries()
-
-        len(Manufacturer.objects.all())
-        self.assertEqual(len(connection.queries), 1)
-
-    @override_settings(DEBUG=True)
-    def test_cache_invalidate_with_update(self):
-        """
-        Cache should be invalidated when calling 'update'
-        """
-        len(Manufacturer.objects.all())
-        Manufacturer.objects.all().update(name='new name')
-        reset_queries()
-
-        len(Manufacturer.objects.all())
         self.assertEqual(len(connection.queries), 1)
