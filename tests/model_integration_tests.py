@@ -117,14 +117,15 @@ class ModelCacheTests(TestCase):
         """
         Cache should be invalidated when calling 'bulk_create'
         """
-        len(Manufacturer.objects.all())
+        initial_count = len(Manufacturer.objects.all())
         Manufacturer.objects.bulk_create(
             [Manufacturer(name='m1'), Manufacturer(name='m2')]
         )
         reset_queries()
 
-        len(Manufacturer.objects.all())
+        new_count = len(Manufacturer.objects.all())
         self.assertEqual(len(connection.queries), 1)
+        self.assertEqual(initial_count + 2, new_count)
 
     @override_settings(DEBUG=True)
     def test_cache_invalidate_with_update(self):
@@ -239,14 +240,15 @@ class ManyToManyModelCacheTests(TestCase):
         """
         car2 = CarFactory.create()
         self.driver.cars.add(car2)
-        Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        initial_count = len(Driver.objects.get(id=self.driver.id).cars.all())
         car2.delete()
         reset_queries()
 
         # Only 1 cache (the one for car selection query) will be invalidated
         # as we only delete data on Car table
-        Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        new_count = len(Driver.objects.get(id=self.driver.id).cars.all())
         self.assertEqual(len(connection.queries), 1)
+        self.assertEqual(initial_count - 1, new_count)
 
     @override_settings(DEBUG=True)
     def test_many_to_many_mapping_cache_with_add(self):
@@ -255,16 +257,14 @@ class ManyToManyModelCacheTests(TestCase):
         be updated when calling 'add' on related objects
         """
         new_cars = CarFactory.create_batch(size=3)
-        Driver.objects.get(id=self.driver.id).cars.all()[0].year
-        # Using add() with a many-to-many relationship will call
-        # QuerySet.bulk_create() to create the relationships.
-        # https://docs.djangoproject.com/en/1.7/ref/models/relations/#django.db.models.fields.related.RelatedManager.add
+        initial_count = len(Driver.objects.get(id=self.driver.id).cars.all())
         self.driver.cars.add(*new_cars)
         reset_queries()
 
         # Cache for both models should be invalidated as add is an m2m change
-        Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        new_count = len(Driver.objects.get(id=self.driver.id).cars.all())
         self.assertEqual(len(connection.queries), 2)
+        self.assertEqual(initial_count + 3, new_count)
 
     @override_settings(DEBUG=True)
     def test_many_to_many_mapping_cache_with_remove(self):
@@ -341,11 +341,14 @@ class ManyToOneModelCacheTests(TestCase):
         Cache should be invalidated when calling 'delete' on related objects
         """
         car2 = CarFactory.create(make=self.manufacturer)
-        len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        initial_count = len(
+            Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
         car2.delete()
         reset_queries()
 
         # # Only 1 cache (the one for car selection query) will be invalidated
         # # as we only delete data on Car table
-        len(Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
+        new_count = len(
+            Manufacturer.objects.get(id=self.manufacturer.id).cars.all())
         self.assertEqual(len(connection.queries), 1)
+        self.assertEqual(initial_count - 1, new_count)
