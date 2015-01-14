@@ -1,5 +1,7 @@
-=======
-Credits
-=======
+MAINTAINERS
 
 * Vijay Katam
+
+CONTRIBUTORS
+
+* Wei Hou
