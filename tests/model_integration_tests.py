@@ -215,6 +215,8 @@ class ManyToManyModelCacheTests(TestCase):
         # The above query is actually composed of 2 sql queries:
         # one for fetching drivers and the other cars.
         self.assertEqual(len(connection.queries), 2)
+        # no. of cars for the driver increased by 1
+        self.assertEqual(len(self.driver.cars.all()), 2)
 
     @override_settings(DEBUG=True)
     def test_many_to_many_mapping_cache_with_save(self):
@@ -275,12 +277,15 @@ class ManyToManyModelCacheTests(TestCase):
         new_car = CarFactory.create()
         self.driver.cars.add(new_car)
         Driver.objects.get(id=self.driver.id).cars.all()[0].year
+        number_of_cars = len(self.driver.cars.all())
         self.driver.cars.remove(self.car)
         reset_queries()
 
         # Cache for both models should be invalidated as remove is an m2m change
         Driver.objects.get(id=self.driver.id).cars.all()[0].year
         self.assertEqual(len(connection.queries), 2)
+        # number of cars decreases by 1
+        self.assertEqual(len(self.driver.cars.all()), number_of_cars - 1)
 
     @override_settings(DEBUG=True)
     def test_many_to_many_mapping_cache_with_clear(self):
@@ -293,7 +298,7 @@ class ManyToManyModelCacheTests(TestCase):
         reset_queries()
 
         # Cache for both models should be invalidated as clear is an m2m change
-        len(Driver.objects.get(id=self.driver.id).cars.all())
+        self.assertEqual(len(Driver.objects.get(id=self.driver.id).cars.all()), 0)
         self.assertEqual(len(connection.queries), 2)
 
 
