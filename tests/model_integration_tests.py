@@ -2,9 +2,6 @@
 
 """
 Integration tests for models using CacheManager
-Use models defined in tests t
-
-1. Black box tests - input model data,  retrieve, delete, update -assert that right data is retrieved
 """
 import django
 from django.forms.models import model_to_dict

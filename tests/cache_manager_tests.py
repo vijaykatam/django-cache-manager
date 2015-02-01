@@ -1,4 +1,4 @@
-# white box tests for cache_manager# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import hashlib
 from unittest import TestCase

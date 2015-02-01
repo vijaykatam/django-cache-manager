@@ -48,9 +48,6 @@ class MyModel(models.Model):
    #set cache manager as default
    objects = CacheManager()
 
-   # or declare a new manager
-   objects = models.Manager()
-   cached_objects = CacheManager()
 ```   
 
 
