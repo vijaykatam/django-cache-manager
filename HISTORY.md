@@ -1,6 +1,12 @@
 History
 -------
 
+0.1.1
+---------------------
+
+* [BUGFIX] - Invalidate related model caches for changes, needed for select_related queries.
+
+
 0.1.0
 ---------------------
 

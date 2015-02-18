@@ -26,8 +26,8 @@ def _update_model_cache(table_name):
 
 def invalidate_model_cache(sender, instance, **kwargs):
     """
-    Signal receiver for models to invalidate model cache.
-    Model cache is invalidated by generating new key for the model.
+    Signal receiver for models to invalidate model cache of sender and related models.
+    Model cache is invalidated by generating new key for each model.
 
     Parameters
     ~~~~~~~~~~
@@ -37,7 +37,11 @@ def invalidate_model_cache(sender, instance, **kwargs):
         The actual instance being saved.
     """
     logger.debug('Received post_save/post_delete signal from sender {0}'.format(sender))
+    related_models = [rel.model for rel in sender._meta.get_all_related_objects()]
+    logger.debug('Related models of sender {0}'.format(related_models))
     _update_model_cache(sender._meta.db_table)
+    for related_model in related_models:
+        _update_model_cache(related_model._meta.db_table)
 
 def invalidate_m2m_cache(sender, instance, model, **kwargs):
     """

@@ -19,4 +19,4 @@ class SignalTests(TestCase):
         mock_uuid4 = Mock(hex='unique_id')
         mock_uuid.uuid4.return_value = mock_uuid4
         invalidate_model_cache(Manufacturer, None)
-        mock_model_cache.share_model_cache_info.assert_called_once_with(ModelCacheInfo(table_name=u'tests_manufacturer', table_key='unique_id'))
+        self.assertEquals(mock_model_cache.share_model_cache_info.call_count, 2)
