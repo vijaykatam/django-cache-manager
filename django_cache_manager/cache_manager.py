@@ -3,6 +3,7 @@ import logging
 
 from django.db import models
 from django.db.models.query import QuerySet
+from django.db.models.sql import EmptyResultSet
 
 from .mixins import (
     CacheBackendMixin,
@@ -40,7 +41,11 @@ class CachingQuerySet(CacheBackendMixin, CacheKeyMixin, CacheInvalidateMixin, Qu
     """
 
     def iterator(self):
-        key = self.generate_key()
+        try:
+            key = self.generate_key()
+        # workaround for Django bug # 12717
+        except EmptyResultSet:
+            return
         result_set = self.cache_backend.get(key)
         if not result_set:
             logger.debug('cache miss for key {0}'.format(key))

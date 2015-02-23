@@ -1,6 +1,10 @@
 History
 -------
 
+0.1.2
+---------------------
+* [BUGFIX] - Properly handle passing of an empty iterable to '__in' filter args.  Related Django bug: https://code.djangoproject.com/ticket/12717
+
 0.1.1
 ---------------------
 
