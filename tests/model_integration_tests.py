@@ -10,6 +10,7 @@ from django.db import (
     connection,
     reset_queries
 )
+from django.db.models.sql import EmptyResultSet
 from django.test import TestCase
 if django.get_version() > '1.7':
     from django.test import override_settings
@@ -366,7 +367,22 @@ class SelectRelatedTests(TestCase):
         honda.name = 'Honda Inc'
         honda.save()
         civic = Car.objects.select_related('make').get(model='Civic')
-        self.assertEquals(civic.make.name, 'Honda Inc')        
+        self.assertEquals(civic.make.name, 'Honda Inc')
 
 
+@override_settings(DEBUG=True)
+class EmptyResultSetTests(TestCase):
+    """
+    Tests validating behavior when as_sql returns EmptyResultSet.
+    """
+    def setUp(self):
+        self.manufacturer = ManufacturerFactory.create(name='Honda')
+        self.car = CarFactory.create(make=self.manufacturer, year=2015, model='Civic')
+        reset_queries()
 
+    def test_empty_list_on_filter_in(self):
+        """
+        A filter call with __in being passed an empty list should correctly
+        handle the EmptyResultSet exception and return None.
+        """
+        self.assertEqual([], list(Car.objects.filter(make__in=[])))

@@ -4,6 +4,7 @@ import hashlib
 from unittest import TestCase
 from mock import patch, Mock
 
+from django.db.models.sql import EmptyResultSet
 
 from django_cache_manager.cache_manager import (
     CacheManager,
@@ -82,6 +83,12 @@ class CachingQuerySetTests(TestCase):
         self.query_set.update(name='name')
         self.assertEquals(invalidate_model_cache.call_count, 1)
 
-
-
-
+    def test_catch_empty_result_set(self, mock_generate_key, mock_cache_backend, invalidate_model_cache):
+        """
+        When an EmptyResultSet exception is raised in the process
+        of passing an empty iterable to an __in parameter, CacheManager
+        should correctly handle it and return None.
+        """
+        mock_generate_key.side_effect = EmptyResultSet()
+        manufacturers = Manufacturer.objects.filter(name__in=[])
+        self.assertEqual([], list(manufacturers))
