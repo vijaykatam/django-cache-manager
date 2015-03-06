@@ -1,9 +1,15 @@
 History
 -------
 
+0.1.3
+---------------------
+* [BUGFIX] - Fix cache eviction for models that have a ManyToManyField with an intermediate(through) model.
+
+
 0.1.2
 ---------------------
 * [BUGFIX] - Properly handle passing of an empty iterable to '__in' filter args.  Related Django bug: https://code.djangoproject.com/ticket/12717
+
 
 0.1.1
 ---------------------

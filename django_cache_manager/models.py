@@ -3,6 +3,7 @@ import logging
 import uuid
 
 from django.db.models.signals import post_save, post_delete, m2m_changed
+from django.db.models.fields.related import RelatedField
 
 from .model_cache_sharing.types import ModelCacheInfo
 from .model_cache_sharing import model_cache_backend
@@ -37,11 +38,13 @@ def invalidate_model_cache(sender, instance, **kwargs):
         The actual instance being saved.
     """
     logger.debug('Received post_save/post_delete signal from sender {0}'.format(sender))
-    related_models = [rel.model for rel in sender._meta.get_all_related_objects()]
-    logger.debug('Related models of sender {0}'.format(related_models))
+    related_tables = set([rel.model._meta.db_table for rel in sender._meta.get_all_related_objects()])
+    # temporary fix for m2m relations with an intermediate model, goes away after better join caching
+    related_tables |= set([field.rel.to._meta.db_table for field in sender._meta.fields if issubclass(type(field), RelatedField)]) 
+    logger.debug('Related tables of sender {0}'.format(related_tables))
     _update_model_cache(sender._meta.db_table)
-    for related_model in related_models:
-        _update_model_cache(related_model._meta.db_table)
+    for related_table in related_tables:
+        _update_model_cache(related_table)
 
 def invalidate_m2m_cache(sender, instance, model, **kwargs):
     """
