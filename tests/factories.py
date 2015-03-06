@@ -81,7 +81,3 @@ class MembershipFactory(factory.django.DjangoModelFactory):
     date_joined = fuzzy.FuzzyDate(datetime.date(2013, 1, 1))
     invite_reason = fuzzy.FuzzyText()
 
-
-class PersonWithGroupFactory(PersonFactory):
-    membership = factory.RelatedFactory(MembershipFactory, 'person')
-
