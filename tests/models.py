@@ -58,5 +58,5 @@ class Membership(models.Model):
     date_joined = models.DateField()
     invite_reason = models.CharField(max_length=64)
 
-    objects = CacheManager()
+    objects = CacheManager() 
 
