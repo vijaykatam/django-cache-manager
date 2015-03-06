@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import factory
 from factory import fuzzy
 
@@ -7,7 +8,10 @@ from tests.models import(
     Manufacturer,
     Car,
     Driver,
-    Engine
+    Engine,
+    Person,
+    Group,
+    Membership
 )
 
 
@@ -52,3 +56,32 @@ class EngineFactory(factory.django.DjangoModelFactory):
     name = fuzzy.FuzzyText()
     horse_power = fuzzy.FuzzyInteger(50, 3000)
     torque = fuzzy.FuzzyText()
+
+
+class PersonFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Person
+
+    name = fuzzy.FuzzyText()
+
+
+class GroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Group
+
+    name = fuzzy.FuzzyText()
+
+
+class MembershipFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Membership
+
+    person = factory.SubFactory(PersonFactory)
+    group = factory.SubFactory(GroupFactory)
+    date_joined = fuzzy.FuzzyDate(datetime.date(2013, 1, 1))
+    invite_reason = fuzzy.FuzzyText()
+
+
+class PersonWithGroupFactory(PersonFactory):
+    membership = factory.RelatedFactory(MembershipFactory, 'person')
+
