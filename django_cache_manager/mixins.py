@@ -5,9 +5,11 @@ import uuid
 
 from django.core.cache import get_cache
 from django.conf import settings
+from django.db.models.fields.related import RelatedField
 
 from .model_cache_sharing.types import ModelCacheInfo
 from .model_cache_sharing import model_cache_backend
+from .models import update_model_cache
 
 _cache_name = getattr(settings, 'django_cache_manager.cache_backend', 'django_cache_manager.cache_backend')
 logger = logging.getLogger(__name__)
@@ -63,8 +65,13 @@ class CacheInvalidateMixin(object):
         Invalidate model cache by generating new key for the model.
         """
         logger.info('Invalidating cache for table {0}'.format(self.model._meta.db_table))
-        model_cache_info = ModelCacheInfo(self.model._meta.db_table, uuid.uuid4().hex)
-        model_cache_backend.share_model_cache_info(model_cache_info)
+        related_tables = set([rel.model._meta.db_table for rel in self.model._meta.get_all_related_objects()])
+        # temporary fix for m2m relations with an intermediate model, goes away after better join caching
+        related_tables |= set([field.rel.to._meta.db_table for field in self.model._meta.fields if issubclass(type(field), RelatedField)]) 
+        logger.debug('Related tables of model {0} are {1}'.format(self.model, related_tables))
+        update_model_cache(self.model._meta.db_table)
+        for related_table in related_tables:
+            update_model_cache(related_table)        
 
 
 class CacheBackendMixin(object):

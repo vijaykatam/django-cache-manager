@@ -1,6 +1,11 @@
 History
 -------
 
+0.1.4
+---------------------
+* [BUGFIX] - Fix cache eviction on bulk updates for models that have a ManyToManyField with an intermediate(through) model.
+
+
 0.1.3
 ---------------------
 * [BUGFIX] - Fix cache eviction for models that have a ManyToManyField with an intermediate(through) model.
