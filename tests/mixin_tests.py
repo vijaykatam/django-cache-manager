@@ -76,7 +76,7 @@ class CacheKeyMixinTests(TestCase):
         self.assertEquals(key, 'uuid')
 
 
-@patch('django_cache_manager.mixins.model_cache_backend')
+@patch('django_cache_manager.models.model_cache_backend')
 class CacheInvalidateMixinTests(TestCase):
     """
     Tests for django_cache_manager.mixins.CacheInvalidateMixin
@@ -86,7 +86,7 @@ class CacheInvalidateMixinTests(TestCase):
         self.mixin = CacheInvalidateMixin()
         self.mixin.model = Manufacturer()
 
-    @patch('django_cache_manager.mixins.uuid')
+    @patch('django_cache_manager.models.uuid')
     def test_invalidate_model_cache(self, mock_uuid, mock_model_cache):
         """
         Mixin broadcasts new model cache info when a model is invalidated
@@ -94,4 +94,4 @@ class CacheInvalidateMixinTests(TestCase):
         mock_uuid4 = Mock(hex='unique_id')
         mock_uuid.uuid4.return_value = mock_uuid4
         self.mixin.invalidate_model_cache()
-        mock_model_cache.share_model_cache_info.assert_called_once_with(ModelCacheInfo(table_name=u'tests_manufacturer', table_key='unique_id'))
+        self.assertEquals(mock_model_cache.share_model_cache_info.call_count, 2)

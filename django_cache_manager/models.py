@@ -17,7 +17,7 @@ For compatibility with Django 1.5 these receivers live in models.py
 logger = logging.getLogger(__name__)
 
 
-def _update_model_cache(table_name):
+def update_model_cache(table_name):
     """
     Updates model cache by generating a new key for the model
     """
@@ -41,10 +41,10 @@ def invalidate_model_cache(sender, instance, **kwargs):
     related_tables = set([rel.model._meta.db_table for rel in sender._meta.get_all_related_objects()])
     # temporary fix for m2m relations with an intermediate model, goes away after better join caching
     related_tables |= set([field.rel.to._meta.db_table for field in sender._meta.fields if issubclass(type(field), RelatedField)]) 
-    logger.debug('Related tables of sender {0}'.format(related_tables))
-    _update_model_cache(sender._meta.db_table)
+    logger.debug('Related tables of sender {0} are {1}'.format(sender, related_tables))
+    update_model_cache(sender._meta.db_table)
     for related_table in related_tables:
-        _update_model_cache(related_table)
+        update_model_cache(related_table)
 
 def invalidate_m2m_cache(sender, instance, model, **kwargs):
     """
@@ -60,8 +60,8 @@ def invalidate_m2m_cache(sender, instance, model, **kwargs):
         The class of the objects that are added to, removed from or cleared from the relation.
     """
     logger.debug('Received m2m_changed signals from sender {0}'.format(sender))
-    _update_model_cache(instance._meta.db_table)
-    _update_model_cache(model._meta.db_table)
+    update_model_cache(instance._meta.db_table)
+    update_model_cache(model._meta.db_table)
 
 
 post_save.connect(invalidate_model_cache)

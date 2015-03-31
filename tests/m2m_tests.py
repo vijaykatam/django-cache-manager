@@ -3,6 +3,7 @@
 """
 Tests for many to many
 """
+import datetime
 import django
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
@@ -143,15 +144,16 @@ class ManyToManyModelCacheTests(TestCase):
         self.assertEqual(len(connection.queries), 2)
 
 
+@override_settings(DEBUG=True)
 class ManyToManyModelThroughTests(TestCase):
     """
     Test cache eviction for m2m relation with a through model
     """
 
     def setUp(self):
-        self.person = PersonFactory.create()
-        self.group = GroupFactory.create()
-        self.membership = MembershipFactory(person=self.person, group=self.group).save()
+        self.person = PersonFactory.create(name='person1')
+        self.group = GroupFactory.create(name='group1')
+        MembershipFactory(person=self.person, group=self.group,date_joined = datetime.date(2008, 1, 1)).save()
 
     def test_m2m_add_person(self):
         person2 = PersonFactory.create()
@@ -167,3 +169,23 @@ class ManyToManyModelThroughTests(TestCase):
         MembershipFactory(person=self.person, group=group2).save()
         self.assertEqual(len(p.groups.all()), 2)
 
+    def test_m2m_bulk_update(self):
+        """
+        Bulk update on a m2m field evicts cache for related models.
+        """
+        group2 = GroupFactory.create(name='group2')
+        MembershipFactory(person=self.person, group=group2, date_joined = datetime.date(2009, 1, 1)).save()
+
+        person2 = PersonFactory.create(name='person2')
+        MembershipFactory(person=person2, group=self.group, date_joined=datetime.date(2009, 1, 1)).save()
+
+
+        self.assertEquals(Person.objects.get(id=self.person.id).groups.order_by('membership__date_joined').all()[0].name, 'group1')
+        self.assertEquals(Group.objects.get(id=self.group.id).members.order_by('membership__date_joined').all()[0].name, 'person1')
+  
+        Membership.objects.filter(group_id=group2.id).update(date_joined=datetime.date(2007, 1, 1))
+        self.assertEquals(Person.objects.get(id=self.person.id).groups.order_by('membership__date_joined').all()[0].name, 'group2')
+
+        Membership.objects.filter(group_id=self.group.id, person_id=person2.id).update(date_joined=datetime.date(2006, 1, 1))
+        self.assertEquals(Group.objects.get(id=self.group.id).members.order_by('membership__date_joined').all()[0].name, 'person2')       
+     
