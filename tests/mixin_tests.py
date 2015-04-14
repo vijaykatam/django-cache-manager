@@ -33,6 +33,17 @@ class CacheKeyMixinTests(TestCase):
         key2 = self.mixin.generate_key()
         self.assertEquals(key1, key2)
 
+    def test_key_generation_with_non_ascii_unicode(self, mock_sql, mock_model_cache):
+        """
+        When the query_key is unicode containing non-ascii characters, hashlib.md5 should not error out
+        """
+        mock_sql.return_value = u'\xf1'
+
+        try:
+            self.mixin.generate_key()
+        except UnicodeEncodeError:
+            self.fail("CacheKeyMixin.gernerate_key() raised a UnicodeEncodeError!")
+
     @patch('django_cache_manager.mixins.uuid')
     def test_new_key_generation(self, mock_uuid, mock_sql, mock_model_cache):
         """
