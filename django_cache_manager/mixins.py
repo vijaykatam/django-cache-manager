@@ -32,7 +32,7 @@ class CacheKeyMixin(object):
         query_key = u'{model_key}{qs}{db}'.format(model_key=key,
                                                   qs=sql,
                                                   db=self.db)
-        key = hashlib.md5(query_key).hexdigest()
+        key = hashlib.md5(query_key.encode('utf-8')).hexdigest()
         return key
 
     def sql(self):
