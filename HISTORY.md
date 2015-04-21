@@ -1,6 +1,11 @@
 History
 -------
 
+0.1.5
+---------------------
+* [BUGFIX] - Fix for non-ascii characters in query.
+
+
 0.1.4
 ---------------------
 * [BUGFIX] - Fix cache eviction on bulk updates for models that have a ManyToManyField with an intermediate(through) model.
