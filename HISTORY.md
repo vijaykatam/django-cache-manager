@@ -1,6 +1,10 @@
 History
 -------
 
+0.2
+---------------------
+* Use django.core.cache.caches available in django 1.7 for efficient cache backend access
+
 0.1.5
 ---------------------
 * [BUGFIX] - Fix for non-ascii characters in query.
