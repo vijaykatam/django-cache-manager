@@ -1,6 +1,10 @@
 History
 -------
 
+0.3
+---------------------
+* Support for django 1.8
+
 0.2
 ---------------------
 * Use django.core.cache.caches available in django 1.7 for efficient cache backend access

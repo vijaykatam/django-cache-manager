@@ -28,7 +28,7 @@ INSTALLED_APPS = (
     ...
 )
 ```
-Define cache backend for `django_cache_manager.cache_backend` in `settings.py`. The backend can be any cache backend 
+Define cache backend for `django_cache_manager.cache_backend` in `settings.py`. The backend can be any cache backend
 that implements django cache API.
 
 ```
@@ -44,11 +44,11 @@ CACHES = {
 ```
 from django_cache_manager.cache_manager import CacheManager
 class MyModel(models.Model):
-   
+
    #set cache manager as default
    objects = CacheManager()
 
-```   
+```
 
 
 ## Django shell
@@ -71,7 +71,7 @@ d.cars.add(c)
 drivers = Driver.objects.select_related('car', 'manufacturer').all()
 ```
 
-## Testing 
+## Testing
 
 To run tests
 
@@ -79,8 +79,8 @@ To run tests
 make test
 ```
 
-##### Supported Django versions 
-Supported - 1.5, 1.6, 1.7
+##### Supported Django versions
+Supported - 1.5, 1.6, 1.7, 1.8
 
 
 
