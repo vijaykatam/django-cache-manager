@@ -7,7 +7,7 @@ readme = open('README.md').read()
 history = open('HISTORY.md').read().replace('.. :changelog:', '')
 
 requirements = [
-    'Django<2.0',
+    'Django<=1.9',
 ]
 
 test_requirements = [
