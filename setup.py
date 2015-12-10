@@ -7,7 +7,7 @@ readme = open('README.md').read()
 history = open('HISTORY.md').read().replace('.. :changelog:', '')
 
 requirements = [
-    'Django<1.9',
+    'Django<2.0',
 ]
 
 test_requirements = [
@@ -40,6 +40,7 @@ setup(
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
     ],
     test_suite='nose.collector',
     tests_require=test_requirements,
