@@ -80,7 +80,7 @@ make test
 ```
 
 ##### Supported Django versions
-Supported - 1.5, 1.6, 1.7, 1.8
+Supported - 1.5, 1.6, 1.7, 1.8, 1.9
 
 
 

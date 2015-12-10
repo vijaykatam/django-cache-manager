@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
+import django
 
-from django.core.cache import get_cache
+if django.get_version() >= '1.7':
+    from django.core.cache import caches
+else:
+    from django.core.cache import get_cache
+
 from django.conf import settings
 
 from .base import BaseSharing
@@ -25,5 +30,9 @@ class SharedMemory(BaseSharing):
     @property
     def cache_backend(self):
         if not hasattr(self, '_cache_backend'):
-            self._cache_backend = get_cache(_cache_name)
+            if django.get_version() >= '1.7':
+                self._cache_backend = caches[_cache_name]
+            else:
+                self._cache_backend = get_cache(_cache_name)
+
         return self._cache_backend

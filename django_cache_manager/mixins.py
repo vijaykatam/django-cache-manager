@@ -4,7 +4,12 @@ import logging
 import uuid
 
 import django
-from django.core.cache import get_cache
+
+if django.get_version() >= '1.7':
+    from django.core.cache import caches
+else:
+    from django.core.cache import get_cache
+
 from django.conf import settings
 from django.db.models.fields.related import RelatedField
 
@@ -12,8 +17,6 @@ from .model_cache_sharing.types import ModelCacheInfo
 from .model_cache_sharing import model_cache_backend
 from .models import update_model_cache
 
-if django.get_version() >= '1.7':
-    from django.core.cache import caches
 
 _cache_name = getattr(settings, 'django_cache_manager.cache_backend', 'django_cache_manager.cache_backend')
 logger = logging.getLogger(__name__)
