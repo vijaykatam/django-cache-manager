@@ -62,7 +62,7 @@ class CacheKeyMixinTests(TestCase):
         """
         mock_sql.return_value = 'sql'
         mock_model_cache.retrieve_model_cache_info.return_value = ModelCacheInfo(table_name=u'tests_manufacturer', table_key='unique_id')
-        expected_key_value = hashlib.md5(u'unique_idsqldb').hexdigest()
+        expected_key_value = hashlib.md5(u'unique_idsqldb'.encode('utf-8')).hexdigest()
         self.assertEquals(expected_key_value, self.mixin.generate_key())
 
     def test_get_or_create_model_key(self, mock_sql, mock_model_cache):
