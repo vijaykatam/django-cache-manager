@@ -1,6 +1,10 @@
 History
 -------
 
+0.4
+---------------------
+* Support for django 1.9
+
 0.3
 ---------------------
 * Support for django 1.8
