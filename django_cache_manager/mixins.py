@@ -5,7 +5,7 @@ import uuid
 
 import django
 
-if django.get_version() >= '1.7':
+if django.VERSION >= (1, 7, 0):
     from django.core.cache import caches
 else:
     from django.core.cache import get_cache
@@ -95,7 +95,7 @@ class CacheBackendMixin(object):
         """
         if not hasattr(self, '_cache_backend'):
             # determine django version for getting cache backend
-            if django.get_version() >= '1.7':
+            if django.VERSION >= (1, 7, 0):
                 self._cache_backend = caches[_cache_name]
             else:
                 self._cache_backend = get_cache(_cache_name)
