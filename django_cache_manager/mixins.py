@@ -4,11 +4,7 @@ import logging
 import uuid
 
 import django
-
-if django.VERSION >= (1, 7, 0):
-    from django.core.cache import caches
-else:
-    from django.core.cache import get_cache
+import django.core.cache
 
 from django.conf import settings
 from django.db.models.fields.related import RelatedField
@@ -95,8 +91,9 @@ class CacheBackendMixin(object):
         """
         if not hasattr(self, '_cache_backend'):
             # determine django version for getting cache backend
-            if django.VERSION >= (1, 7, 0):
-                self._cache_backend = caches[_cache_name]
+            if hasattr(django.core.cache, 'get_cache'):
+                self._cache_backend = django.core.cache.get_cache(_cache_name)
             else:
-                self._cache_backend = get_cache(_cache_name)
+                self._cache_backend = django.core.cache.caches[_cache_name]
+
         return self._cache_backend
