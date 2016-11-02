@@ -68,9 +68,16 @@ class CacheInvalidateMixin(object):
         Invalidate model cache by generating new key for the model.
         """
         logger.info('Invalidating cache for table {0}'.format(self.model._meta.db_table))
-        related_tables = set([rel.model._meta.db_table for rel in self.model._meta.get_all_related_objects()])
-        # temporary fix for m2m relations with an intermediate model, goes away after better join caching
-        related_tables |= set([field.rel.to._meta.db_table for field in self.model._meta.fields if issubclass(type(field), RelatedField)])
+        if django.VERSION >= (1, 8):
+            related_tables = set(
+                [f.related_model._meta.db_table for f in self.model._meta.get_fields()
+                 if ((f.one_to_many or f.one_to_one) and f.auto_created)
+                 or f.many_to_one or (f.many_to_many and not f.auto_created)])
+        else:
+            related_tables = set([rel.model._meta.db_table for rel in self.model._meta.get_all_related_objects()])
+            # temporary fix for m2m relations with an intermediate model, goes away after better join caching
+            related_tables |= set([field.rel.to._meta.db_table for field in self.model._meta.fields if issubclass(type(field), RelatedField)])
+
         logger.debug('Related tables of model {0} are {1}'.format(self.model, related_tables))
         update_model_cache(self.model._meta.db_table)
         for related_table in related_tables:
