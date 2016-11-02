@@ -39,7 +39,7 @@ def invalidate_model_cache(sender, instance, **kwargs):
         The actual instance being saved.
     """
     logger.debug('Received post_save/post_delete signal from sender {0}'.format(sender))
-    if django.get_version() >= '1.8':
+    if django.VERSION >= (1, 8):
         related_tables = set(
             [f.related_model._meta.db_table for f in sender._meta.get_fields()
              if ((f.one_to_many or f.one_to_one) and f.auto_created)
