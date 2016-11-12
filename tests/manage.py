@@ -12,7 +12,7 @@ except ImportError:
     sys.exit(1)
 
 if __name__ == "__main__":
-    if django.get_version() < '1.6':
+    if django.VERSION < (1, 6):
         from django.core.management import execute_manager
         execute_manager(settings)
     else:
