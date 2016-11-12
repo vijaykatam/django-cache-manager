@@ -68,7 +68,7 @@ class CacheInvalidateMixin(object):
         Invalidate model cache by generating new key for the model.
         """
         logger.info('Invalidating cache for table {0}'.format(self.model._meta.db_table))
-        if django.VERSION >= (1, 10):
+        if django.VERSION >= (1, 8):
             related_tables = set(
                 [f.related_model._meta.db_table for f in self.model._meta.get_fields()
                  if ((f.one_to_many or f.one_to_one) and f.auto_created)
