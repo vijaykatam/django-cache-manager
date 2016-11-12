@@ -34,9 +34,8 @@ that implements django cache API.
 ```
 CACHES = {
     'django_cache_manager.cache_backend': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': '/tmp/django_cache_manager',
-        'TIMEOUT': 0
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
     }
 }
 ```
@@ -80,7 +79,7 @@ make test
 ```
 
 ##### Supported Django versions
-Supported - 1.5, 1.6, 1.7, 1.8, 1.9
+Supported - 1.5, 1.6, 1.7, 1.8, 1.9, 1.10
 
 
 

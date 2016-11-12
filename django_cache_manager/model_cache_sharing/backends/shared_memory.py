@@ -26,9 +26,9 @@ class SharedMemory(BaseSharing):
     @property
     def cache_backend(self):
         if not hasattr(self, '_cache_backend'):
-            if hasattr(django.core.cache, 'get_cache'):
-                self._cache_backend = django.core.cache.get_cache(_cache_name)
-            else:
+            if hasattr(django.core.cache, 'caches'):
                 self._cache_backend = django.core.cache.caches[_cache_name]
+            else:
+                self._cache_backend = django.core.cache.get_cache(_cache_name)
 
         return self._cache_backend
