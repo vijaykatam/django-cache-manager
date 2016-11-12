@@ -1,6 +1,10 @@
 History
 -------
 
+0.5
+---
+* Add support for Django 1.10
+
 0.4.1
 ---------------------
 * Update requirements to Django<1.10
