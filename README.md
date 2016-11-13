@@ -6,6 +6,7 @@ Simple cache manager for django models that caches querysets for a model. Cache 
 
 [![Build Status](https://travis-ci.org/vijaykatam/django-cache-manager.svg?branch=master)](https://travis-ci.org/vijaykatam/django-cache-manager)
 [![Coverage Status](https://img.shields.io/coveralls/vijaykatam/django-cache-manager.svg)](https://coveralls.io/r/vijaykatam/django-cache-manager)
+[![PyPI version](https://badge.fury.io/py/django-cache-manager.svg)](https://badge.fury.io/py/django-cache-manager)
 
 ## Installation
 
