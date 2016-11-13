@@ -8,6 +8,7 @@ history = open('HISTORY.md').read().replace('.. :changelog:', '')
 
 requirements = [
     'Django<1.11',
+    'retrying==1.3.3'
 ]
 
 test_requirements = [

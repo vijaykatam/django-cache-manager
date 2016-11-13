@@ -4,6 +4,9 @@ import logging
 from django.db import models
 from django.db.models.query import QuerySet
 from django.db.models.sql import EmptyResultSet
+from retrying import retry
+
+from django_cache_manager.retry_settings import retry_count
 
 from .mixins import (
     CacheBackendMixin,
@@ -61,3 +64,11 @@ class CachingQuerySet(CacheBackendMixin, CacheKeyMixin, CacheInvalidateMixin, Qu
     def update(self, **kwargs):
         self.invalidate_model_cache()
         return super(CachingQuerySet, self).update(**kwargs)
+
+    @retry(stop_max_attempt_number=retry_count)
+    def _get_result_set(self, key):
+        return self.cache_backend.get(key)
+
+    @retry(stop_max_attempt_number=retry_count)
+    def _set_result_set(self, key, result_set):
+        self.cache_backend.set(key, result_set)
