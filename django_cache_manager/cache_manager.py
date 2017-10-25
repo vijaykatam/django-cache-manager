@@ -47,7 +47,7 @@ class CachingQuerySet(CacheBackendMixin, CacheKeyMixin, CacheInvalidateMixin, Qu
         except EmptyResultSet:
             return
         result_set = self.cache_backend.get(key)
-        if not result_set:
+        if result_set is None:
             logger.debug('cache miss for key {0}'.format(key))
             result_set = list(super(CachingQuerySet, self).iterator())
             self.cache_backend.set(key, result_set)
