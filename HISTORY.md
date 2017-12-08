@@ -1,6 +1,11 @@
 History
 -------
 
+0.5.1
+---
+* Avoid spurious cache miss when query is empty
+* Fixed error: 'NoneType' object has no attribute `\_meta`
+
 0.5
 ---
 * Add support for Django 1.10
@@ -38,7 +43,7 @@ History
 
 0.1.2
 ---------------------
-* [BUGFIX] - Properly handle passing of an empty iterable to '__in' filter args.  Related Django bug: https://code.djangoproject.com/ticket/12717
+* [BUGFIX] - Properly handle passing of an empty iterable to '\__in' filter args.  Related Django bug: https://code.djangoproject.com/ticket/12717
 
 
 0.1.1
