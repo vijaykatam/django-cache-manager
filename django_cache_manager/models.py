@@ -42,8 +42,9 @@ def invalidate_model_cache(sender, instance, **kwargs):
     if django.VERSION >= (1, 8):
         related_tables = set(
             [f.related_model._meta.db_table for f in sender._meta.get_fields()
-             if ((f.one_to_many or f.one_to_one) and f.auto_created)
-             or f.many_to_one or (f.many_to_many and not f.auto_created)])
+             if f.related_model is not None
+             and (((f.one_to_many or f.one_to_one) and f.auto_created)
+                 or f.many_to_one or (f.many_to_many and not f.auto_created))])
     else:
         related_tables = set([rel.model._meta.db_table for rel in sender._meta.get_all_related_objects()])
         # temporary fix for m2m relations with an intermediate model, goes away after better join caching
