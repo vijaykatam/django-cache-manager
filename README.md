@@ -1,6 +1,5 @@
-===============================
 django-cache-manager
-===============================
+=====================
 
 Simple cache manager for django models that caches querysets for a model. Cache manager will cache any query that has been seen for a model. Model cache is evicted for any updates/deletes to the model. This manager is useful for models that don't change often.
 
